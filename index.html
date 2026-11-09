@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Katalog Akun eFootball</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#1b2838;--cd:#16202d;--tx:#e6edf3;--mu:#9fb0c0;--ln:#2a475e;--note:#66c0f4;--pr:#a4d007;--co:#ffd24a;--ac:#a4d007;--ab:#16200a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 15px/1.45 Barlow,system-ui,sans-serif}
+header{position:sticky;top:0;background:var(--bg);z-index:9;padding:12px 14px 10px;border-bottom:1px solid var(--ln)}
+h1{margin:0 0 8px;font:700 26px/1 "Barlow Condensed",Impact,sans-serif}
+.bar{display:flex;gap:8px}
+input,select{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--ln);border-radius:8px;padding:8px 10px;min-width:0}
+::placeholder{color:var(--mu);opacity:1}
+#q{flex:1}
+nav{display:flex;gap:8px;padding:10px 14px 0;max-width:1100px;margin:auto}
+nav a{padding:7px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--cd);color:var(--tx);text-decoration:none;font-weight:600}
+nav a.on{background:var(--ac);color:var(--ab);border-color:var(--ac)}
+main{padding:14px;max-width:1100px;margin:auto}
+#app{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.c{background:var(--cd);border:1px solid var(--ln);border-radius:10px;overflow:hidden}
+.im{position:relative;aspect-ratio:4/3;background:#0e1620;display:grid;place-items:center}
+.im img{width:100%;height:100%;object-fit:cover}
+.ph{color:var(--mu);font:700 40px "Barlow Condensed",sans-serif}
+.no{position:absolute;left:8px;top:8px;background:var(--co);color:#000;font:700 16px "Barlow Condensed",sans-serif;padding:1px 9px;border-radius:5px}
+.sb{position:absolute;right:8px;top:8px;background:#171a21;color:#e6edf3;border-radius:999px;padding:3px 10px 3px 5px;display:flex;gap:5px;align-items:center;font-weight:600;font-size:13px}
+.sb svg{width:18px;height:18px}
+.st{position:absolute;inset:0;display:grid;place-items:center;background:#000a;color:#fff;font:700 30px "Barlow Condensed",sans-serif;transform:rotate(-8deg)}
+.bd{padding:10px 12px 12px}
+h3{margin:0 0 8px;font:700 24px/1.1 "Barlow Condensed",sans-serif}
+h3 a{color:var(--tx);text-decoration:underline;text-underline-offset:3px}
+.g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.g small{display:block;color:var(--mu);font-size:12px}
+.g b{font:700 20px "Barlow Condensed",sans-serif}
+.n{color:var(--note)}.p{color:var(--pr)}.o{color:var(--co)}
+.wa{display:block;margin-top:10px;text-align:center;background:var(--ac);color:var(--ab);font-weight:600;padding:9px;border-radius:8px;text-decoration:none}
+.dm{background:#2a475e;padding:8px 14px;text-align:center}
+footer{max-width:1100px;margin:6px auto 30px;padding:0 14px;color:var(--mu);font-size:14px}
+footer p{margin:6px 0}footer a{color:var(--note)}
+</style></head><body>
+<header><h1>Katalog Akun eFootball</h1>
+<div class="bar"><input id="q" type="search" placeholder="Cari nama pemain"><select id="s"><option value="no">Nomor</option><option value="note">Kekuatan tertinggi</option><option value="price">Harga termurah</option></select></div></header>
+<div id="dm"></div><nav id="tb"></nav>
+<main><div id="app"><p>Memuat katalog…</p></div></main>
+<footer id="ft"></footer>
+<script>
+// === PENGATURAN: tempel link CSV dari Google Sheets di antara tanda kutip ===
+const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSa0V2mn-TkVjk_DgsrPCWqwkl6SIiegcsYZthtez-_E1uGnckqbpDLhgzej4cYY2Kt-31qiDrZrkvD/pub?gid=345566186&single=true&output=csv';
+const WA='6287716922350', TESTI='';
+// ============================================================================
+const DEMO=[{no:'1',nama:'Neymar 2026',note:'3142',harga:'300K',coin:'30',reg:'ID',fe:'ya',status:'tersedia'},{no:'2',nama:'James R.',note:'3150',harga:'250K',coin:'480',reg:'ID',fe:'ya',status:'tersedia'},{no:'3',nama:'Rodri',note:'3179',harga:'300K',coin:'400',reg:'ID',fe:'ya',status:'terjual'}];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=s=>parseInt(String(s).replace(/\D/g,''))||0;
+const ok=u=>/^https?:\/\//i.test(u||'');
+const pic=u=>{if(!u)return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w600`:ok(u)?u:''};
+const STEAM='<svg viewBox="0 0 24 24" role="img" aria-label="Steam"><circle cx="12" cy="12" r="11" fill="#1b2838" stroke="#c7d5e0" stroke-width="1.5"/><circle cx="15.5" cy="9.5" r="3.2" fill="none" stroke="#c7d5e0" stroke-width="1.6"/><circle cx="8.5" cy="15.5" r="2.3" fill="#c7d5e0"/><path d="M8.5 15.5 14 11.3" stroke="#c7d5e0" stroke-width="1.6"/></svg>';
+let D=[];
+function csv(t){const r=[];let c=[],f='',q=false;for(let i=0;i<t.length;i++){const h=t[i];if(q){if(h=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=h}else if(h=='"')q=true;else if(h==','){c.push(f);f=''}else if(h=='\n'||h=='\r'){if(h=='\r'&&t[i+1]=='\n')i++;c.push(f);r.push(c);c=[];f=''}else f+=h}if(f||c.length){c.push(f);r.push(c)}return r}
+function norm(o){return{no:num(o.no),nama:o.nama||'',note:num(o.note),harga:o.harga||'-',coin:num(o.coin),reg:o.reg||'ID',fe:/^(fe|ya|yes|true|1|✅)$/i.test((o.fe||'').trim()),sold:/jual|sold/i.test(o.status||''),steam:!/lain/i.test(o.platform||''),album:o.album||'',gambar:o.gambar||''}}
+async function load(){
+ if(!CSV_URL){D=DEMO.map(norm);$('#dm').innerHTML='<div class="dm">Mode contoh: link Google Sheets belum diisi.</div>';return render()}
+ try{const r=await fetch(CSV_URL+(CSV_URL.includes('?')?'&':'?')+'t='+Date.now());const rows=csv(await r.text()),h=rows[0].map(x=>x.trim().toLowerCase());
+  D=rows.slice(1).filter(x=>x.some(v=>v.trim())).map(x=>{const o={};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return norm(o)}).filter(a=>a.nama&&!a.nama.startsWith('#'))}
+ catch(e){$('#app').innerHTML='<p>Katalog gagal dimuat. Coba muat ulang halaman.</p>';return}
+ render()}
+function render(){
+ const q=$('#q').value.trim().toLowerCase(),s=$('#s').value,tab=location.hash=='#terjual'?'terjual':'tersedia',tn=D.filter(a=>a.sold).length;
+ $('#tb').innerHTML=`<a href="#tersedia" class="${tab=='terjual'?'':'on'}">Tersedia (${D.length-tn})</a><a href="#terjual" class="${tab=='terjual'?'on':''}">Terjual (${tn})</a>`;
+ const V=D.filter(a=>a.sold==(tab=='terjual')&&a.nama.toLowerCase().includes(q)).sort((a,b)=>s=='note'?b.note-a.note:s=='price'?num(a.harga)-num(b.harga):a.no-b.no);
+ $('#app').innerHTML=V.length?V.map(a=>{const p=pic(a.gambar);return`<article class="c"><div class="im">${p?`<img src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?'<div class="st">TERJUAL</div>':''}</div><div class="bd"><h3>${ok(a.album)?`<a href="${esc(a.album)}" target="_blank" rel="noopener">${esc(a.nama)}</a>`:esc(a.nama)}</h3><div class="g"><div><small>NOTE</small><b class="n">${a.note}</b></div><div><small>IDR</small><b class="p">${esc(a.harga)}</b></div><div><small>COIN</small><b class="o">${a.coin}</b></div><div><small>REG</small><b>${esc(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">Tanya lewat WhatsApp</a>`}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
+ $('#ft').innerHTML='<p>Klik nama pemain untuk melihat semua screenshot full squad.</p><p>NOTE = collective strength. FE = First Email.</p><p>Email dan password akun Steam bisa diganti. Login hanya dengan Steam ID dan password Steam.</p><p>Akun yang sudah dibeli tidak dapat ditukar dengan akun lain.</p>'+(ok(TESTI)?`<p><a href="${esc(TESTI)}" target="_blank" rel="noopener">Lihat testimoni</a></p>`:'');
+}
+$('#q').oninput=$('#s').onchange=render;addEventListener('hashchange',render);
+load();
+</script></body></html>
