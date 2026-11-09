@@ -18,8 +18,8 @@ nav a.on{background:var(--ac);color:var(--ab);border-color:var(--ac)}
 main{padding:14px;max-width:1100px;margin:auto}
 #app{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
 .c{background:var(--cd);border:1px solid var(--ln);border-radius:10px;overflow:hidden}
-.im{position:relative;aspect-ratio:4/3;background:#0e1620;display:grid;place-items:center}
-.im img{width:100%;height:100%;object-fit:cover}
+.im{position:relative;aspect-ratio:16/9;background:#0e1620;display:grid;place-items:center}
+.im img{width:100%;height:100%;object-fit:contain;display:block}
 .ph{color:var(--mu);font:700 40px "Barlow Condensed",sans-serif}
 .no{position:absolute;left:8px;top:8px;background:var(--co);color:#000;font:700 16px "Barlow Condensed",sans-serif;padding:1px 9px;border-radius:5px}
 .sb{position:absolute;right:8px;top:8px;background:#171a21;color:#e6edf3;border-radius:999px;padding:3px 10px 3px 5px;display:flex;gap:5px;align-items:center;font-weight:600;font-size:13px}
@@ -52,11 +52,12 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=s=>parseInt(String(s).replace(/\D/g,''))||0;
 const ok=u=>/^https?:\/\//i.test(u||'');
-const pic=u=>{if(!u)return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w600`:ok(u)?u:''};
+const pic=u=>{if(!u)return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w1200`:ok(u)?u:''};
+const fb=i=>{const m=i.src.match(/[?&]id=([\w-]+)/);if(m&&!i.dataset.t){i.dataset.t=1;i.src='https://lh3.googleusercontent.com/d/'+m[1]+'=w1200'}else{const d=document.createElement('div');d.className='ph';d.textContent='Squad';i.replaceWith(d)}};
 const STEAM='<svg viewBox="0 0 24 24" role="img" aria-label="Steam"><circle cx="12" cy="12" r="11" fill="#1b2838" stroke="#c7d5e0" stroke-width="1.5"/><circle cx="15.5" cy="9.5" r="3.2" fill="none" stroke="#c7d5e0" stroke-width="1.6"/><circle cx="8.5" cy="15.5" r="2.3" fill="#c7d5e0"/><path d="M8.5 15.5 14 11.3" stroke="#c7d5e0" stroke-width="1.6"/></svg>';
 let D=[];
 function csv(t){const r=[];let c=[],f='',q=false;for(let i=0;i<t.length;i++){const h=t[i];if(q){if(h=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=h}else if(h=='"')q=true;else if(h==','){c.push(f);f=''}else if(h=='\n'||h=='\r'){if(h=='\r'&&t[i+1]=='\n')i++;c.push(f);r.push(c);c=[];f=''}else f+=h}if(f||c.length){c.push(f);r.push(c)}return r}
-function norm(o){return{no:num(o.no),nama:o.nama||'',note:num(o.note),harga:o.harga||'-',coin:num(o.coin),reg:o.reg||'ID',fe:/^(fe|ya|yes|true|1|✅)$/i.test((o.fe||'').trim()),sold:/jual|sold/i.test(o.status||''),steam:!/lain/i.test(o.platform||''),album:o.album||'',gambar:o.gambar||''}}
+function norm(o){return{no:num(o.no),nama:o.nama||'',note:num(o.note||o.nota||o.collective||o.colective||o.strength),harga:o.harga||'-',coin:num(o.coin),reg:o.reg||'ID',fe:/^(fe|ya|yes|true|1|✅)$/i.test((o.fe||'').trim()),sold:/jual|sold/i.test(o.status||''),steam:!/lain/i.test(o.platform||''),album:o.album||'',gambar:o.gambar||''}}
 async function load(){
  if(!CSV_URL){D=DEMO.map(norm);$('#dm').innerHTML='<div class="dm">Mode contoh: link Google Sheets belum diisi.</div>';return render()}
  try{const r=await fetch(CSV_URL+(CSV_URL.includes('?')?'&':'?')+'t='+Date.now());const rows=csv(await r.text()),h=rows[0].map(x=>x.trim().toLowerCase());
@@ -67,7 +68,7 @@ function render(){
  const q=$('#q').value.trim().toLowerCase(),s=$('#s').value,tab=location.hash=='#terjual'?'terjual':'tersedia',tn=D.filter(a=>a.sold).length;
  $('#tb').innerHTML=`<a href="#tersedia" class="${tab=='terjual'?'':'on'}">Tersedia (${D.length-tn})</a><a href="#terjual" class="${tab=='terjual'?'on':''}">Terjual (${tn})</a>`;
  const V=D.filter(a=>a.sold==(tab=='terjual')&&a.nama.toLowerCase().includes(q)).sort((a,b)=>s=='note'?b.note-a.note:s=='price'?num(a.harga)-num(b.harga):a.no-b.no);
- $('#app').innerHTML=V.length?V.map(a=>{const p=pic(a.gambar);return`<article class="c"><div class="im">${p?`<img src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?'<div class="st">TERJUAL</div>':''}</div><div class="bd"><h3>${ok(a.album)?`<a href="${esc(a.album)}" target="_blank" rel="noopener">${esc(a.nama)}</a>`:esc(a.nama)}</h3><div class="g"><div><small>NOTE</small><b class="n">${a.note}</b></div><div><small>IDR</small><b class="p">${esc(a.harga)}</b></div><div><small>COIN</small><b class="o">${a.coin}</b></div><div><small>REG</small><b>${esc(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">Tanya lewat WhatsApp</a>`}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
+ $('#app').innerHTML=V.length?V.map(a=>{const p=pic(a.gambar);return`<article class="c"><div class="im">${p?`<img src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="fb(this)">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?'<div class="st">TERJUAL</div>':''}</div><div class="bd"><h3>${ok(a.album)?`<a href="${esc(a.album)}" target="_blank" rel="noopener">${esc(a.nama)}</a>`:esc(a.nama)}</h3><div class="g"><div><small>NOTE</small><b class="n">${a.note}</b></div><div><small>IDR</small><b class="p">${esc(a.harga)}</b></div><div><small>COIN</small><b class="o">${a.coin}</b></div><div><small>REG</small><b>${esc(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">Tanya lewat WhatsApp</a>`}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
  $('#ft').innerHTML='<p>Klik nama pemain untuk melihat semua screenshot full squad.</p><p>NOTE = collective strength. FE = First Email.</p><p>Email dan password akun Steam bisa diganti. Login hanya dengan Steam ID dan password Steam.</p><p>Akun yang sudah dibeli tidak dapat ditukar dengan akun lain.</p>'+(ok(TESTI)?`<p><a href="${esc(TESTI)}" target="_blank" rel="noopener">Lihat testimoni</a></p>`:'');
 }
 $('#q').oninput=$('#s').onchange=render;addEventListener('hashchange',render);
