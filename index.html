@@ -97,6 +97,7 @@ h1 small{display:flex;justify-content:space-between;text-align:initial;text-alig
 h1 small s{text-decoration:none}h1 small i{width:.6em}
 
 nav{flex-wrap:wrap}nav a{padding:7px 11px}
+nav{position:sticky;top:calc(var(--hh,130px) - 1px);z-index:8;background:#0a1a52;padding-bottom:10px;box-shadow:0 0 0 100vmax #0a1a52;clip-path:inset(0 -100vmax)}
 .tm{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
 .tmc{background:rgba(8,18,64,.88);border:1px solid var(--ln);border-top:3px solid var(--y);border-radius:10px;padding:14px;overflow:hidden}
 .tmc.in{animation:cin .6s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(min(var(--i),8)*70ms)}
@@ -202,5 +203,7 @@ async function share(no){const a=D.find(x=>String(x.no)==String(no));if(!a)retur
  try{if(navigator.share)await navigator.share({title:a.nama,text:t,url:u});else{await navigator.clipboard.writeText(t+'\n'+u);alert('Link disalin')}}catch(e){}}
 $('#app').onclick=e=>{const b=e.target.closest('.adm'),h=e.target.closest('.sh'),z=e.target.closest('.tmi');if(b)mark(b.dataset.no,b.dataset.s,b);else if(h)share(h.dataset.no);else if(z)zoom(z.currentSrc||z.src)};
 $('#q').oninput=$('#s').onchange=render;addEventListener('hashchange',()=>{ANI=true;render()});
+const hh=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');
+hh();addEventListener('resize',hh);if(window.ResizeObserver)new ResizeObserver(hh).observe(document.querySelector('header'));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(hh);
 load();
 </script></body></html>
