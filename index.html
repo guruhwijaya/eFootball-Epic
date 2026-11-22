@@ -144,9 +144,9 @@ const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSa0V2mn-TkVjk_Dg
 const WA='6287716922350', TESTI='';
 // Link Web App dari Google Apps Script (untuk tombol Tandai Terjual). Kosongkan kalau belum dipasang.
 const APPS='';
-// Link Web App Apps Script untuk GALERI FOLDER DRIVE (lihat file apps-script-galeri.gs). Kosongkan kalau belum dipasang.
-// Kolom 'gambar' di Sheets boleh diisi link FOLDER Drive (drive.google.com/drive/folders/...). Link satu gambar lama tetap jalan.
-const GAL='';
+// URL Web App Apps Script (berakhiran /exec) untuk galeri foto langsung dari folder di kolom ALBUM.
+// Kosongkan kalau belum dipasang: katalog akan memakai kolom 'galeri' di Sheets.
+const GAL='https://script.google.com/macros/s/AKfycbx-ANFSK5MokoQWQaS9kaudQ-5AzOupVrGxI1kVhdHXogk0_oKsIyOyONqegoYebahQrg/exec';
 // OPSIONAL: link CSV tab terpisah untuk testimoni. Kosongkan kalau testimoni ditulis sebagai kolom di tab katalog
 // (kolom: foto_testi berisi link Drive; boleh banyak link dalam satu sel; kolom testimoni, pembeli, bintang opsional).
 const TESTI_CSV='';
@@ -185,13 +185,14 @@ function testiHTML(an){
  return '<div class="tg">'+T.map((t,i)=>{const p=pic(t.gambar),cap=t.teks||t.nama&&t.nama!='Pembeli';
   return `<figure class="tmf${an?' in':''}" style="--i:${i}">${p?`<img class="tmi" src="${esc(p)}" alt="Testimoni ${i+1}" loading="lazy" referrerpolicy="no-referrer" onerror="tfb(this)">`:''}${cap?`<figcaption>${t.bintang?`<small style="color:var(--y)">${'★'.repeat(t.bintang)}</small>`:''}${t.teks?esc(t.teks):''}${t.nama&&t.nama!='Pembeli'?`<small>${esc(t.nama)}${t.tgl?' • '+esc(t.tgl):''}</small>`:''}</figcaption>`:''}</figure>`}).join('')+'</div>'}
 function zoom(src){const d=document.createElement('div');d.className='lb';d.innerHTML='<img src="'+esc(src)+'" alt="">';d.onclick=()=>d.remove();document.body.appendChild(d)}
-const gall=a=>{const f=fid(a.gambar);if(f)return GL[f]||[];const g=[...new Set(gids(a.galeri))];return g.length?g:gids(a.gambar)};
+const gall=a=>{const f=fid(a.album),w=f&&GL[f];if(w&&w.length)return w;const g=[...new Set(gids(a.galeri))];return g.length?g:[...new Set(gids(a.gambar))]};
 const gal=a=>{const ids=gall(a);if(ids.length)return ids.map(i=>gpic(i,2000));const p=pic(a.gambar);return p?[p]:[]};
 async function loadG(){
  if(!GAL)return;
- const ids=[...new Set(D.map(a=>fid(a.gambar)).filter(Boolean))];if(!ids.length)return;
+ const ids=[...new Set(D.filter(a=>!a.sold).map(a=>fid(a.album)).filter(Boolean))];if(!ids.length)return;
  try{const r=await fetch(GAL+(GAL.includes('?')?'&':'?')+'ids='+ids.join(','));const j=await r.json();
-  if(j&&typeof j=='object'&&!j.error){GL={...GL,...j};try{localStorage.setItem('gl',JSON.stringify(GL))}catch(e){}render()}}
+  if(j&&typeof j=='object'&&!j.error){const o=JSON.stringify(GL);GL={...GL,...j};const n=JSON.stringify(GL);
+   if(n!=o){try{localStorage.setItem('gl',n)}catch(e){}render()}}}
  catch(e){}}
 function lbox(list,start){
  if(!list.length)return;
