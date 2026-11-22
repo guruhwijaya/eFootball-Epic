@@ -118,6 +118,18 @@ nav{position:sticky;top:calc(var(--hh,130px) - 1px);z-index:8;background:#0a1a52
 .lb{position:fixed;inset:0;z-index:99;background:rgba(2,6,24,.95);display:flex;justify-content:center;align-items:flex-start;padding:10px;overflow:auto;cursor:zoom-out}
 .lb img{max-width:100%;height:auto;border-radius:8px}
 @media(prefers-reduced-motion:reduce){.tmf.in{animation:none}}
+.im img{cursor:zoom-in}.st{pointer-events:none}
+.cn{position:absolute;right:8px;bottom:8px;background:rgba(5,12,46,.85);color:#fff;border:1px solid rgba(255,224,0,.6);border-radius:999px;padding:1px 9px;font:600 12px Barlow,system-ui,sans-serif;pointer-events:none}
+.lb2{position:fixed;inset:0;z-index:99;background:rgba(2,6,24,.96);display:flex;flex-direction:column}
+.lb2 .lt{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));color:#fff;font:600 16px Barlow,system-ui,sans-serif}
+.lb2 .lx{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,224,0,.6);background:rgba(8,18,64,.9);color:#fff;font-size:18px;cursor:pointer}
+.lb2 .ls{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.lb2 .ls::-webkit-scrollbar{display:none}
+.lb2 .lp{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:0 6px 12px}
+.lb2 .lp img{width:100%;height:100%;object-fit:contain;border-radius:8px;display:block}
+.lb2 .lv{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,224,0,.6);background:rgba(8,18,64,.85);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.lb2 .pv{left:8px}.lb2 .nx{right:8px}
+@media(hover:none){.lb2 .lv{display:none}}
 </style></head><body>
 <div class="fx" aria-hidden="true"><i style="--x:6%;--s:34px;--d:19s;--l:-2s"></i><i style="--x:24%;--s:22px;--d:15s;--l:-9s"></i><i style="--x:42%;--s:40px;--d:23s;--l:-14s"></i><i style="--x:61%;--s:26px;--d:17s;--l:-5s"></i><i style="--x:78%;--s:36px;--d:21s;--l:-11s"></i><i style="--x:92%;--s:24px;--d:16s;--l:-7s"></i></div>
 
@@ -132,6 +144,9 @@ const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSa0V2mn-TkVjk_Dg
 const WA='6287716922350', TESTI='';
 // Link Web App dari Google Apps Script (untuk tombol Tandai Terjual). Kosongkan kalau belum dipasang.
 const APPS='';
+// Link Web App Apps Script untuk GALERI FOLDER DRIVE (lihat file apps-script-galeri.gs). Kosongkan kalau belum dipasang.
+// Kolom 'gambar' di Sheets boleh diisi link FOLDER Drive (drive.google.com/drive/folders/...). Link satu gambar lama tetap jalan.
+const GAL='';
 // OPSIONAL: link CSV tab terpisah untuk testimoni. Kosongkan kalau testimoni ditulis sebagai kolom di tab katalog
 // (kolom: foto_testi berisi link Drive; boleh banyak link dalam satu sel; kolom testimoni, pembeli, bintang opsional).
 const TESTI_CSV='';
@@ -141,7 +156,10 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=s=>parseInt(String(s).replace(/\D/g,''))||0;
 const ok=u=>/^https?:\/\//i.test(u||'');
-const pic=u=>{if(!u)return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w1200`:ok(u)?u:''};
+const fid=u=>{const m=String(u||'').match(/\/folders\/([\w-]+)/);return m?m[1]:''};
+const gids=u=>{const r=[],re=/\/d\/([\w-]+)|[?&]id=([\w-]+)/g;let m;while(m=re.exec(String(u||'')))r.push(m[1]||m[2]);return r};
+const gpic=(i,w)=>`https://drive.google.com/thumbnail?id=${i}&sz=w${w||1200}`;
+const pic=u=>{if(!u||fid(u))return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w1200`:ok(u)?u:''};
 const fb=i=>{const m=i.src.match(/[?&]id=([\w-]+)/);if(m&&!i.dataset.t){i.dataset.t=1;i.src='https://lh3.googleusercontent.com/d/'+m[1]+'=w1200'}else{const d=document.createElement('div');d.className='ph';d.textContent='Squad';i.replaceWith(d)}};
 const STEAM='<i class="si" role="img" aria-label="Steam"></i>';
 let ANI=true,D=[],NK='note',L={n:'NOTE',harga:'HARGA',coin:'COIN',reg:'REG'};
@@ -150,6 +168,7 @@ const IC_SH='<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="
 const KN=['no','nama','harga','coin','reg','fe','status','gambar','album','platform','tanggal','testimoni','testi','ulasan','pembeli','bintang','foto_testi','foto testi','gambar_testi'];
 const DEMOT=[{nama:'Rizky',teks:'Akun sesuai deskripsi, proses cepat. Recommended!',tgl:'8 Nov 2026',bintang:5,gambar:'',akun:'3'},{nama:'Dimas',teks:'Admin ramah dan fast respon, login lancar.',tgl:'5 Nov 2026',bintang:5,gambar:'',akun:'7'}];
 let T=[],AL=[];
+let GL={};try{GL=JSON.parse(localStorage.getItem('gl')||'{}')}catch(e){}
 const mkT=a=>{const ls=String(a.testiImg||'').match(/https?:\/\/[^\s,;]+/g)||[],b={nama:a.pembeli,teks:a.testi,tgl:a.tgl,bintang:a.bintang};return ls.length?ls.map((g,i)=>({...b,teks:i?'':b.teks,gambar:g})):[b]};
 const BLN=['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
 const tglVal=s=>{const m=String(s||'').match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);if(!m)return 0;const b=BLN.indexOf(m[2].toLowerCase());return b<0?0:Date.UTC(+m[3],b,+m[1])};
@@ -166,6 +185,29 @@ function testiHTML(an){
  return '<div class="tg">'+T.map((t,i)=>{const p=pic(t.gambar),cap=t.teks||t.nama&&t.nama!='Pembeli';
   return `<figure class="tmf${an?' in':''}" style="--i:${i}">${p?`<img class="tmi" src="${esc(p)}" alt="Testimoni ${i+1}" loading="lazy" referrerpolicy="no-referrer" onerror="tfb(this)">`:''}${cap?`<figcaption>${t.bintang?`<small style="color:var(--y)">${'★'.repeat(t.bintang)}</small>`:''}${t.teks?esc(t.teks):''}${t.nama&&t.nama!='Pembeli'?`<small>${esc(t.nama)}${t.tgl?' • '+esc(t.tgl):''}</small>`:''}</figcaption>`:''}</figure>`}).join('')+'</div>'}
 function zoom(src){const d=document.createElement('div');d.className='lb';d.innerHTML='<img src="'+esc(src)+'" alt="">';d.onclick=()=>d.remove();document.body.appendChild(d)}
+const gal=a=>{const f=fid(a.gambar),ids=f?GL[f]||[]:gids(a.gambar);if(ids.length)return ids.map(i=>gpic(i,2000));const p=pic(a.gambar);return p?[p]:[]};
+async function loadG(){
+ if(!GAL)return;
+ const ids=[...new Set(D.map(a=>fid(a.gambar)).filter(Boolean))];if(!ids.length)return;
+ try{const r=await fetch(GAL+(GAL.includes('?')?'&':'?')+'ids='+ids.join(','));const j=await r.json();
+  if(j&&typeof j=='object'&&!j.error){GL={...GL,...j};try{localStorage.setItem('gl',JSON.stringify(GL))}catch(e){}render()}}
+ catch(e){}}
+function lbox(list,start){
+ if(!list.length)return;
+ const d=document.createElement('div');d.className='lb2';
+ d.innerHTML='<div class="lt"><span class="lc"></span><button class="lx" aria-label="Tutup">✕</button></div><div class="ls">'+list.map((u,i)=>'<div class="lp"><img src="'+esc(u)+'" alt="Gambar '+(i+1)+'" referrerpolicy="no-referrer"'+(i>1?' loading="lazy"':'')+' onerror="tfb(this)"></div>').join('')+'</div>'+(list.length>1?'<button class="lv pv" aria-label="Sebelumnya">‹</button><button class="lv nx" aria-label="Berikutnya">›</button>':'');
+ const ls=d.querySelector('.ls'),lc=d.querySelector('.lc'),ob=document.body.style.overflow;
+ const idx=()=>Math.max(0,Math.min(list.length-1,Math.round(ls.scrollLeft/(ls.clientWidth||1))));
+ const upd=()=>{lc.textContent=list.length>1?(idx()+1)+' / '+list.length:''};
+ const go=n=>ls.scrollBy({left:n*ls.clientWidth,behavior:'smooth'});
+ const key=e=>{if(e.key=='Escape')close(true);else if(e.key=='ArrowRight')go(1);else if(e.key=='ArrowLeft')go(-1)};
+ const pop=()=>close(false);
+ function close(back){removeEventListener('keydown',key);removeEventListener('popstate',pop);d.remove();document.body.style.overflow=ob;if(back&&history.state&&history.state.lb)history.back()}
+ ls.addEventListener('scroll',upd,{passive:true});
+ d.onclick=e=>{if(e.target.closest('.lx')||e.target==d||e.target.classList.contains('lp')||e.target==ls)close(true);else if(e.target.closest('.pv'))go(-1);else if(e.target.closest('.nx'))go(1)};
+ document.body.appendChild(d);document.body.style.overflow='hidden';
+ ls.scrollLeft=(start||0)*ls.clientWidth;upd();
+ history.pushState({lb:1},'');addEventListener('popstate',pop);addEventListener('keydown',key)}
 function csv(t){const r=[];let c=[],f='',q=false;for(let i=0;i<t.length;i++){const h=t[i];if(q){if(h=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=h}else if(h=='"')q=true;else if(h==','){c.push(f);f=''}else if(h=='\n'||h=='\r'){if(h=='\r'&&t[i+1]=='\n')i++;c.push(f);r.push(c);c=[];f=''}else f+=h}if(f||c.length){c.push(f);r.push(c)}return r}
 function norm(o){return{no:num(o.no),nama:o.nama||'',noteT:String(o[NK]??''),note:num(o[NK]),harga:o.harga||'-',coin:num(o.coin),reg:o.reg||'ID',fe:/^(fe|ya|yes|true|1|✅)$/i.test((o.fe||'').trim()),sold:/jual|sold/i.test(o.status||''),steam:!/lain/i.test(o.platform||''),album:o.album||'',gambar:o.gambar||'',tgl:o.tanggal||'',testi:o.testimoni||o.testi||o.ulasan||'',testiImg:o.foto_testi||o['foto testi']||o.gambar_testi||'',pembeli:o.pembeli||'',bintang:Math.min(5,num(o.bintang))}}
 async function load(){
@@ -177,14 +219,14 @@ async function load(){
   AL=rows.slice(1).filter(x=>x.some(v=>v.trim())).map(x=>{const o={};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return norm(o)});D=AL.filter(a=>a.nama&&!a.nama.startsWith('#'));
   try{const ov=JSON.parse(localStorage.getItem('ov')||'{}');D.forEach(a=>{const o=ov[a.no];if(o&&Date.now()-o.t<6e5)a.sold=o.s=='terjual'})}catch(e){}}
  catch(e){$('#app').innerHTML='<p>Katalog gagal dimuat. Coba muat ulang halaman.</p>';return}
- await tp;if(!TESTI_CSV)T=sortT(AL.filter(a=>!String(a.nama).startsWith('#')&&(a.testi||a.testiImg)).flatMap(mkT));render()}
+ await tp;if(!TESTI_CSV)T=sortT(AL.filter(a=>!String(a.nama).startsWith('#')&&(a.testi||a.testiImg)).flatMap(mkT));render();loadG()}
 function render(){
  const an=ANI;ANI=false;
  const q=$('#q').value.trim().toLowerCase(),s=$('#s').value,tab=location.hash=='#terjual'?'terjual':location.hash=='#testimoni'?'testimoni':'tersedia',TM=tab=='testimoni'&&!AK,tn=D.filter(a=>a.sold).length;
  $('#tb').innerHTML=AK?'<a class="bk" href="'+location.pathname+'">← Lihat semua akun</a>':`<a href="#tersedia" class="${tab=='tersedia'?'on':''}">Tersedia (${D.length-tn})</a><a href="#terjual" class="${tab=='terjual'?'on':''}">Terjual (${tn})</a><a href="#testimoni" class="${tab=='testimoni'?'on':''}">Testimoni (${T.length})</a>`;
  const bar=document.querySelector('.bar');if(bar)bar.style.display=TM?'none':'';
  const AKS=AK&&!D.some(a=>String(a.no)==AK&&!a.sold),V=D.filter(a=>(AK?String(a.no)==AK&&a.sold==AKS:a.sold==(tab=='terjual')&&a.nama.toLowerCase().includes(q))).sort((a,b)=>s=='note'?b.note-a.note:s=='price'?num(a.harga)-num(b.harga):a.no-b.no);
- $('#app').innerHTML=TM?testiHTML(an):V.length?V.map((a,i)=>{const p=pic(a.gambar);return`<article class="c${an?' in':''}" style="--i:${i}"><div class="im">${p?`<img src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="fb(this)">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?`<div class="st"><span>TERJUAL${a.tgl?`<small>${esc(a.tgl)}</small>`:''}</span></div>`:''}</div><div class="bd"><h3>${ok(a.album)?`<a href="${esc(a.album)}" target="_blank" rel="noopener">${esc(a.nama)}</a>`:esc(a.nama)}</h3><div class="g"><div><small>${esc(L.n)}</small><b class="n">${esc(a.noteT)}</b></div><div><small>${esc(L.harga)}</small><b class="p">${esc(a.harga)}</b></div><div><small>${esc(L.coin)}</small><b class="o">${a.coin}</b></div><div><small>${esc(L.reg)}</small><b>${esc(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<div class="acts"><button class="sh" data-no="${a.no}">${IC_SH}Share</button><a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">${IC_CT}Order</a></div>`}${ADM&&APPS?`<button class="adm" data-no="${a.no}" data-s="${a.sold?'tersedia':'terjual'}">${a.sold?'Kembalikan ke Tersedia':'Tandai Terjual'}</button>`:''}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
+ $('#app').innerHTML=TM?testiHTML(an):V.length?V.map((a,i)=>{const fo=fid(a.gambar),fl=fo?GL[fo]||[]:gids(a.gambar),p=fl[0]?gpic(fl[0]):pic(a.gambar);return`<article class="c${an?' in':''}" style="--i:${i}"><div class="im">${p?`<img data-no="${a.no}" src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="fb(this)">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${fl.length>1?`<span class="cn">${fl.length} foto</span>`:''}${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?`<div class="st"><span>TERJUAL${a.tgl?`<small>${esc(a.tgl)}</small>`:''}</span></div>`:''}</div><div class="bd"><h3>${ok(a.album)?`<a href="${esc(a.album)}" target="_blank" rel="noopener">${esc(a.nama)}</a>`:esc(a.nama)}</h3><div class="g"><div><small>${esc(L.n)}</small><b class="n">${esc(a.noteT)}</b></div><div><small>${esc(L.harga)}</small><b class="p">${esc(a.harga)}</b></div><div><small>${esc(L.coin)}</small><b class="o">${a.coin}</b></div><div><small>${esc(L.reg)}</small><b>${esc(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<div class="acts"><button class="sh" data-no="${a.no}">${IC_SH}Share</button><a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">${IC_CT}Order</a></div>`}${ADM&&APPS?`<button class="adm" data-no="${a.no}" data-s="${a.sold?'tersedia':'terjual'}">${a.sold?'Kembalikan ke Tersedia':'Tandai Terjual'}</button>`:''}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
  $('#ft').innerHTML='<p>Klik nama pemain untuk melihat semua screenshot full squad.</p>'+(/note|nota|collective|strength/i.test(NK)?'<p>'+esc(L.n)+' = collective strength. FE = First Email.</p>':'<p>FE = First Email.</p>')+'<p>Email dan password akun Steam bisa diganti. Login hanya dengan Steam ID dan password Steam.</p><p>Akun yang sudah dibeli tidak dapat ditukar dengan akun lain.</p>'+(ok(TESTI)?`<p><a href="${esc(TESTI)}" target="_blank" rel="noopener">Lihat testimoni</a></p>`:'');
 }
 async function mark(no,st,b){
@@ -201,7 +243,7 @@ async function mark(no,st,b){
 async function share(no){const a=D.find(x=>String(x.no)==String(no));if(!a)return;
  const u=location.origin+location.pathname+'?akun='+a.no,t='Akun eFootball no '+a.no+' ('+a.nama+') - '+a.harga;
  try{if(navigator.share)await navigator.share({title:a.nama,text:t,url:u});else{await navigator.clipboard.writeText(t+'\n'+u);alert('Link disalin')}}catch(e){}}
-$('#app').onclick=e=>{const b=e.target.closest('.adm'),h=e.target.closest('.sh'),z=e.target.closest('.tmi');if(b)mark(b.dataset.no,b.dataset.s,b);else if(h)share(h.dataset.no);else if(z)zoom(z.currentSrc||z.src)};
+$('#app').onclick=e=>{const b=e.target.closest('.adm'),h=e.target.closest('.sh'),z=e.target.closest('.tmi'),g=e.target.closest('.im img');if(b)mark(b.dataset.no,b.dataset.s,b);else if(h)share(h.dataset.no);else if(z)zoom(z.currentSrc||z.src);else if(g){const a=D.find(x=>String(x.no)==g.dataset.no);if(a)lbox(gal(a),0)}};
 $('#q').oninput=$('#s').onchange=render;addEventListener('hashchange',()=>{ANI=true;render()});
 const hh=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');
 hh();addEventListener('resize',hh);if(window.ResizeObserver)new ResizeObserver(hh).observe(document.querySelector('header'));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(hh);
