@@ -185,7 +185,7 @@ function testiHTML(an){
  return '<div class="tg">'+T.map((t,i)=>{const p=pic(t.gambar),cap=t.teks||t.nama&&t.nama!='Pembeli';
   return `<figure class="tmf${an?' in':''}" style="--i:${i}">${p?`<img class="tmi" src="${esc(p)}" alt="Testimoni ${i+1}" loading="lazy" referrerpolicy="no-referrer" onerror="tfb(this)">`:''}${cap?`<figcaption>${t.bintang?`<small style="color:var(--y)">${'★'.repeat(t.bintang)}</small>`:''}${t.teks?esc(t.teks):''}${t.nama&&t.nama!='Pembeli'?`<small>${esc(t.nama)}${t.tgl?' • '+esc(t.tgl):''}</small>`:''}</figcaption>`:''}</figure>`}).join('')+'</div>'}
 function zoom(src){const d=document.createElement('div');d.className='lb';d.innerHTML='<img src="'+esc(src)+'" alt="">';d.onclick=()=>d.remove();document.body.appendChild(d)}
-const gall=a=>{const f=fid(a.gambar);return f?GL[f]||[]:[...new Set([...gids(a.gambar),...gids(a.galeri)])]};
+const gall=a=>{const f=fid(a.gambar);if(f)return GL[f]||[];const g=[...new Set(gids(a.galeri))];return g.length?g:gids(a.gambar)};
 const gal=a=>{const ids=gall(a);if(ids.length)return ids.map(i=>gpic(i,2000));const p=pic(a.gambar);return p?[p]:[]};
 async function loadG(){
  if(!GAL)return;
