@@ -149,7 +149,7 @@ nav{position:sticky;top:calc(var(--hh,130px) - 1px);z-index:8;background:#0a1a52
 .lb2 .lv{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,224,0,.6);background:rgba(8,18,64,.85);color:#fff;font-size:26px;line-height:1;cursor:pointer}
 .lb2 .pv{left:8px}.lb2 .nx{right:8px}
 @media(hover:none){.lb2 .lv{display:none}}
-</style><script async src="https://www.googletagmanager.com/gtag/js?id=G-5XPPPC5EXX"></script>
+.vs{text-align:center;font:500 13px Barlow,system-ui,sans-serif;color:var(--mu);padding:14px 16px 24px}.vs b{color:var(--y)}</style><script async src="https://www.googletagmanager.com/gtag/js?id=G-5XPPPC5EXX"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-5XPPPC5EXX');</script>
 </head><body>
 <div class="fx" aria-hidden="true"><i style="--x:6%;--s:34px;--d:19s;--l:-2s"></i><i style="--x:24%;--s:22px;--d:15s;--l:-9s"></i><i style="--x:42%;--s:40px;--d:23s;--l:-14s"></i><i style="--x:61%;--s:26px;--d:17s;--l:-5s"></i><i style="--x:78%;--s:36px;--d:21s;--l:-11s"></i><i style="--x:92%;--s:24px;--d:16s;--l:-7s"></i></div>
@@ -211,6 +211,13 @@ function zoom(src){const d=document.createElement('div');d.className='lb';d.inne
 const gall=a=>{const f=fid(a.album),w=f&&GL[f];if(w&&w.ids&&w.ids.length)return w.ids;const g=[...new Set(gids(a.galeri))];return g.length?g:[...new Set(gids(a.gambar))]};
 const UP=a=>{const f=fid(a.album),w=f&&GL[f],t=w&&w.t;return t?new Date(t).toLocaleDateString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',year:'numeric'}):esc(a.updS||'')};
 const gal=a=>{const ids=gall(a);if(ids.length)return ids.map(i=>gpic(i,2000));const p=pic(a.gambar);return p?[p]:[]};
+function vid(){try{let v=localStorage.getItem('vid');if(!v){v='v'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem('vid',v)}return v}catch(e){return ''}}
+async function loadV(){
+ if(!GAL)return;
+ try{const r=await fetch(GAL+(GAL.includes('?')?'&':'?')+'v='+encodeURIComponent(vid())+'&t='+Date.now());const j=await r.json();
+  const el=document.getElementById('vs');
+  if(el&&j&&typeof j.hari=='number')el.innerHTML='Pengunjung hari ini <b>'+j.hari+'</b> · Bulan ini <b>'+j.bulan+'</b> · Tahun ini <b>'+j.tahun+'</b> · Total <b>'+j.total+'</b>'}
+ catch(e){}}
 async function loadG(){
  if(!GAL)return;
  const ids=[...new Set(D.filter(a=>!a.sold).map(a=>fid(a.album)).filter(Boolean))];if(!ids.length)return;
@@ -246,7 +253,7 @@ async function load(){
   AL=rows.slice(1).filter(x=>x.some(v=>v.trim())).map(x=>{const o={};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return norm(o)});D=AL.filter(a=>a.nama&&!a.nama.startsWith('#'));FT=AL.map(a=>a.catatan).filter(Boolean);
   try{const ov=JSON.parse(localStorage.getItem('ov')||'{}');D.forEach(a=>{const o=ov[a.no];if(o&&Date.now()-o.t<6e5)a.sold=o.s=='terjual'})}catch(e){}}
  catch(e){$('#app').innerHTML='<p>Katalog gagal dimuat. Coba muat ulang halaman.</p>';return}
- await tp;if(!TESTI_CSV)T=sortT(AL.filter(a=>!String(a.nama).startsWith('#')&&(a.testi||a.testiImg)).flatMap(mkT));render();loadG()}
+ await tp;if(!TESTI_CSV)T=sortT(AL.filter(a=>!String(a.nama).startsWith('#')&&(a.testi||a.testiImg)).flatMap(mkT));render();loadG();loadV()}
 function render(){
  const an=ANI;ANI=false;
  const q=$('#q').value.trim().toLowerCase(),s=$('#s').value,tab=location.hash=='#terjual'?'terjual':location.hash=='#testimoni'?'testimoni':'tersedia',TM=tab=='testimoni'&&!AK,tn=D.filter(a=>a.sold).length;
@@ -275,4 +282,4 @@ $('#q').oninput=$('#s').onchange=render;addEventListener('hashchange',()=>{ANI=t
 const hh=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');
 hh();addEventListener('resize',hh);if(window.ResizeObserver)new ResizeObserver(hh).observe(document.querySelector('header'));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(hh);
 load();
-</script></body></html>
+</script><div id="vs" class="vs"></div></body></html>
