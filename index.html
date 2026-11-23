@@ -166,7 +166,7 @@ const flag=c=>{c=String(c||'').trim().toUpperCase();return /^[A-Z]{2}$/.test(c)?
 let ANI=true,D=[],NK='note',L={n:'NOTE',harga:'HARGA',coin:'COIN',reg:'REGION'};
 const ADM=new URLSearchParams(location.search).has('admin'),AK=new URLSearchParams(location.search).get('akun');
 const IC_SH='<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',IC_CT='<svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6"/></svg>';
-const KN=['no','nama','harga','coin','reg','fe','status','gambar','galeri','album','catatan','platform','tanggal','testimoni','testi','ulasan','pembeli','bintang','foto_testi','foto testi','gambar_testi','update'];
+const KN=['no','nama','harga','coin','reg','fe','status','gambar','galeri','album','catatan','platform','tanggal','testimoni','testi','ulasan','pembeli','bintang','foto_testi','foto testi','gambar_testi','update','price'];
 const DEMOT=[{nama:'Rizky',teks:'Akun sesuai deskripsi, proses cepat. Recommended!',tgl:'8 Nov 2026',bintang:5,gambar:'',akun:'3'},{nama:'Dimas',teks:'Admin ramah dan fast respon, login lancar.',tgl:'5 Nov 2026',bintang:5,gambar:'',akun:'7'}];
 let T=[],AL=[];
 let FT=[];let GL={};try{GL=JSON.parse(localStorage.getItem('gl2')||'{}')}catch(e){}
@@ -213,12 +213,13 @@ function lbox(list,start){
  ls.scrollLeft=(start||0)*ls.clientWidth;upd();
  history.pushState({lb:1},'');addEventListener('popstate',pop);addEventListener('keydown',key)}
 function csv(t){const r=[];let c=[],f='',q=false;for(let i=0;i<t.length;i++){const h=t[i];if(q){if(h=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=h}else if(h=='"')q=true;else if(h==','){c.push(f);f=''}else if(h=='\n'||h=='\r'){if(h=='\r'&&t[i+1]=='\n')i++;c.push(f);r.push(c);c=[];f=''}else f+=h}if(f||c.length){c.push(f);r.push(c)}return r}
-function norm(o){return{no:num(o.no),nama:o.nama||'',noteT:String(o[NK]??''),note:num(o[NK]),harga:o.harga||'-',coin:num(o.coin),reg:o.reg||'ID',fe:/^(fe|ya|yes|true|1|✅)$/i.test((o.fe||'').trim()),sold:/jual|sold/i.test(o.status||''),steam:!/lain/i.test(o.platform||''),album:o.album||'',gambar:o.gambar||'',galeri:o.galeri||'',catatan:o.catatan||'',tgl:o.tanggal||'',testi:o.testimoni||o.testi||o.ulasan||'',testiImg:o.foto_testi||o['foto testi']||o.gambar_testi||'',pembeli:o.pembeli||'',bintang:Math.min(5,num(o.bintang)),updS:o.update||''}}
+function norm(o){return{no:num(o.no),nama:o.nama||'',noteT:String(o[NK]??''),note:num(o[NK]),harga:o.harga||o.price||'-',coin:num(o.coin),reg:o.reg||'ID',fe:/^(fe|ya|yes|true|1|✅)$/i.test((o.fe||'').trim()),sold:/jual|sold/i.test(o.status||''),steam:!/lain/i.test(o.platform||''),album:o.album||'',gambar:o.gambar||'',galeri:o.galeri||'',catatan:o.catatan||'',tgl:o.tanggal||'',testi:o.testimoni||o.testi||o.ulasan||'',testiImg:o.foto_testi||o['foto testi']||o.gambar_testi||'',pembeli:o.pembeli||'',bintang:Math.min(5,num(o.bintang)),updS:o.update||''}}
 async function load(){
  const tp=loadT();
  if(!CSV_URL){D=DEMO.map(norm);await tp;$('#dm').innerHTML='<div class="dm">Mode contoh: link Google Sheets belum diisi.</div>';return render()}
  try{const r=await fetch(CSV_URL+(CSV_URL.includes('?')?'&':'?')+'t='+Date.now());const rows=csv(await r.text()),h=rows[0].map(x=>x.trim().toLowerCase()),H0=rows[0].map(x=>x.trim());
   const ni=h.findIndex(k=>k&&!KN.includes(k));if(ni>=0){NK=h[ni];L.n=H0[ni].toUpperCase()}
+  L.harga=h.includes('price')&&!h.includes('harga')?'PRICE':'HARGA';
   ['harga','coin','reg'].forEach(k=>{const i=h.indexOf(k);if(i>=0)L[k]=H0[i].toUpperCase()});
   AL=rows.slice(1).filter(x=>x.some(v=>v.trim())).map(x=>{const o={};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return norm(o)});D=AL.filter(a=>a.nama&&!a.nama.startsWith('#'));FT=AL.map(a=>a.catatan).filter(Boolean);
   try{const ov=JSON.parse(localStorage.getItem('ov')||'{}');D.forEach(a=>{const o=ov[a.no];if(o&&Date.now()-o.t<6e5)a.sold=o.s=='terjual'})}catch(e){}}
