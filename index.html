@@ -65,6 +65,10 @@ main{padding:14px;max-width:1100px;margin:auto}
 .st small{display:block;margin-top:4px;text-align:center;font:600 17px Barlow,system-ui,sans-serif;letter-spacing:.5px}
 .st{text-align:center;position:absolute;inset:0;display:grid;place-items:center;background:#000a;color:#fff;font:700 30px "Barlow Condensed",sans-serif;transform:rotate(-8deg)}
 .bd{padding:10px 12px 12px}
+.nh{position:relative;text-align:center;padding:4px 0 10px;container-type:inline-size}
+.ub{position:absolute;right:0;top:calc(50% - 3px);transform:translateY(-50%);line-height:1;font:600 12px Barlow,system-ui,sans-serif;color:var(--mu);white-space:nowrap;padding:3px 9px;border:1px solid rgba(168,186,240,.45);border-radius:999px;background:rgba(10,26,82,.7)}
+@container (max-width:340px){.ub{position:static;transform:none;display:table;margin:8px auto 0}.nh{padding-bottom:4px}}
+
 h3{margin:0 0 8px;font:700 25px/1.1 "Barlow Condensed",sans-serif;text-align:center;text-transform:uppercase;letter-spacing:.6px;text-shadow:0 0 12px rgba(255,224,0,.35)}
 h3 a{color:var(--y);text-decoration:underline;text-underline-offset:3px}
 .g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
@@ -158,8 +162,9 @@ const num=s=>parseInt(String(s).replace(/\D/g,''))||0;
 const ok=u=>/^https?:\/\//i.test(u||'');
 const fid=u=>{const m=String(u||'').match(/\/folders\/([\w-]+)/);return m?m[1]:''};
 const gids=u=>{const r=[],re=/\/d\/([\w-]+)|[?&]id=([\w-]+)/g;let m;while(m=re.exec(String(u||'')))r.push(m[1]||m[2]);return r};
-const gpic=(i,w)=>`https://drive.google.com/thumbnail?id=${i}&sz=w${w||1200}`;
-const pic=u=>{if(!u||fid(u))return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w1200`:ok(u)?u:''};
+const CB=Math.floor(Date.now()/6e5);
+const gpic=(i,w)=>`https://drive.google.com/thumbnail?id=${i}&sz=w${w||1200}&cb=${CB}`;
+const pic=u=>{if(!u||fid(u))return'';const m=u.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/);return m?`https://drive.google.com/thumbnail?id=${m[1]||m[2]}&sz=w1200&cb=${CB}`:ok(u)?u:''};
 const fb=i=>{const m=i.src.match(/[?&]id=([\w-]+)/);if(m&&!i.dataset.t){i.dataset.t=1;i.src='https://lh3.googleusercontent.com/d/'+m[1]+'=w1200'}else{const d=document.createElement('div');d.className='ph';d.textContent='Squad';i.replaceWith(d)}};
 const STEAM='<i class="si" role="img" aria-label="Steam"></i>';
 const flag=c=>{c=String(c||'').trim().toUpperCase();return /^[A-Z]{2}$/.test(c)?String.fromCodePoint(...[...c].map(x=>127397+x.charCodeAt(0))):esc(c)};
@@ -192,7 +197,7 @@ const gal=a=>{const ids=gall(a);if(ids.length)return ids.map(i=>gpic(i,2000));co
 async function loadG(){
  if(!GAL)return;
  const ids=[...new Set(D.filter(a=>!a.sold).map(a=>fid(a.album)).filter(Boolean))];if(!ids.length)return;
- try{const r=await fetch(GAL+(GAL.includes('?')?'&':'?')+'ids='+ids.join(','));const j=await r.json();
+ try{const r=await fetch(GAL+(GAL.includes('?')?'&':'?')+'ids='+ids.join(',')+'&t='+Date.now(),{cache:'no-store'});const j=await r.json();
   if(j&&typeof j=='object'&&!j.error){const o=JSON.stringify(GL);GL={...GL,...j};const n=JSON.stringify(GL);
    if(n!=o){try{localStorage.setItem('gl2',n)}catch(e){}render()}}}
  catch(e){}}
@@ -231,7 +236,7 @@ function render(){
  $('#tb').innerHTML=AK?'<a class="bk" href="'+location.pathname+'">← Lihat semua akun</a>':`<a href="#tersedia" class="${tab=='tersedia'?'on':''}">Tersedia (${D.length-tn})</a><a href="#terjual" class="${tab=='terjual'?'on':''}">Terjual (${tn})</a><a href="#testimoni" class="${tab=='testimoni'?'on':''}">Testimoni (${T.length})</a>`;
  const bar=document.querySelector('.bar');if(bar)bar.style.display=TM?'none':'';
  const AKS=AK&&!D.some(a=>String(a.no)==AK&&!a.sold),V=D.filter(a=>(AK?String(a.no)==AK&&a.sold==AKS:a.sold==(tab=='terjual')&&a.nama.toLowerCase().includes(q))).sort((a,b)=>s=='note'?b.note-a.note:s=='price'?num(a.harga)-num(b.harga):a.no-b.no);
- $('#app').innerHTML=TM?testiHTML(an):V.length?V.map((a,i)=>{const fo=fid(a.gambar),fl=gall(a),p=fl[0]?gpic(fl[0]):pic(a.gambar);return`<article class="c${an?' in':''}" style="--i:${i}"><div class="im">${p?`<img data-no="${a.no}" src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="fb(this)">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${fl.length>1?`<span class="cn">${fl.length} foto</span>`:''}${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?`<div class="st"><span>TERJUAL${a.tgl?`<small>${esc(a.tgl)}</small>`:''}</span></div>`:''}</div><div class="bd"><div style="position:relative;text-align:center;padding:4px 0 10px"><h3 style="margin:0">${esc(a.nama)}</h3>${UP(a)?`<small style="position:absolute;right:0;top:calc(50% - 3px);transform:translateY(-50%);line-height:1;font:600 12px Barlow,system-ui,sans-serif;color:var(--mu);white-space:nowrap;padding:3px 9px;border:1px solid rgba(168,186,240,.45);border-radius:999px;background:rgba(10,26,82,.7)">Update ${UP(a)}</small>`:''}</div><div class="g"><div><small>${esc(L.n)}</small><b class="n">${esc(a.noteT)}</b></div><div><small>${esc(L.harga)}</small><b class="p">${esc(a.harga)}</b></div><div><small>${esc(L.coin)}</small><b class="o">${a.coin}</b></div><div><small>${esc(L.reg)}</small><b title="${esc(a.reg)}">${flag(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<div class="acts"><button class="sh" data-no="${a.no}">${IC_SH}Share</button><a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">${IC_CT}Order</a></div>`}${ADM&&APPS?`<button class="adm" data-no="${a.no}" data-s="${a.sold?'tersedia':'terjual'}">${a.sold?'Kembalikan ke Tersedia':'Tandai Terjual'}</button>`:''}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
+ $('#app').innerHTML=TM?testiHTML(an):V.length?V.map((a,i)=>{const fo=fid(a.gambar),fl=gall(a),p=fl[0]?gpic(fl[0]):pic(a.gambar);return`<article class="c${an?' in':''}" style="--i:${i}"><div class="im">${p?`<img data-no="${a.no}" src="${esc(p)}" alt="Squad ${esc(a.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="fb(this)">`:'<div class="ph">Squad</div>'}<span class="no">${a.no}</span>${fl.length>1?`<span class="cn">${fl.length} foto</span>`:''}${a.steam?`<span class="sb">${STEAM}Steam</span>`:''}${a.sold?`<div class="st"><span>TERJUAL${a.tgl?`<small>${esc(a.tgl)}</small>`:''}</span></div>`:''}</div><div class="bd"><div class="nh"><h3 style="margin:0">${esc(a.nama)}</h3>${UP(a)?`<small class="ub">Update ${UP(a)}</small>`:''}</div><div class="g"><div><small>${esc(L.n)}</small><b class="n">${esc(a.noteT)}</b></div><div><small>${esc(L.harga)}</small><b class="p">${esc(a.harga)}</b></div><div><small>${esc(L.coin)}</small><b class="o">${a.coin}</b></div><div><small>${esc(L.reg)}</small><b title="${esc(a.reg)}">${flag(a.reg)}${a.fe?' FE ✅':''}</b></div></div>${a.sold?'':`<div class="acts"><button class="sh" data-no="${a.no}">${IC_SH}Share</button><a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent('Halo, saya tertarik akun no '+a.no+' ('+a.nama+')')}" target="_blank" rel="noopener">${IC_CT}Order</a></div>`}${ADM&&APPS?`<button class="adm" data-no="${a.no}" data-s="${a.sold?'tersedia':'terjual'}">${a.sold?'Kembalikan ke Tersedia':'Tandai Terjual'}</button>`:''}</div></article>`}).join(''):'<p>Tidak ada akun yang cocok.</p>';
  $('#ft').innerHTML=(FT.length?FT.map(t=>'<p>'+esc(t)+'</p>').join(''):'<p>Klik gambar untuk melihat semua screenshot full squad.</p>'+(/note|nota|collective|strength/i.test(NK)?'<p>'+esc(L.n)+' = collective strength. FE = First Email.</p>':'<p>FE = First Email.</p>')+'<p>Email dan password akun Steam bisa diganti. Login hanya dengan Steam ID dan password Steam.</p><p>Akun yang sudah dibeli tidak dapat ditukar dengan akun lain.</p>')+(ok(TESTI)?`<p><a href="${esc(TESTI)}" target="_blank" rel="noopener">Lihat testimoni</a></p>`:'');
 }
 async function mark(no,st,b){
