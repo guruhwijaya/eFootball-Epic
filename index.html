@@ -219,7 +219,7 @@ const tfb=i=>{const m=i.src.match(/[?&]id=([\w-]+)/);if(m&&!i.dataset.t){i.datas
 // === SENSOR NOMOR REKENING ===
 // Kunci: ID_FILE_DRIVE atau 'NAMA#urutan_foto' (mulai 0). Isi: [[x,y,lebar,tinggi],...] dalam satuan lebar gambar (0-1).
 // Cara menambah: buka halaman dengan ?admin, buka foto testimoni, tekan "Sensor", seret di atas nomor rekening, lalu "Salin".
-const SN={'6. R. CARLOS#0':[[.06,.84,.2,.07],[.075,1.045,.28,.065]]};
+const SN={};
 try{Object.assign(SN,JSON.parse(localStorage.getItem('sn')||'{}'))}catch(e){}
 const SNK=(t,i)=>t.name+'#'+i,snb=(t,i)=>SN[t.ids[i]]||SN[SNK(t,i)]||[];
 const sa=(t,i,f)=>{const b=snb(t,i);return b.length?` data-sn="${JSON.stringify(b)}" data-f="${f}" style="visibility:hidden" onload="snL(this)"`:''};
