@@ -167,9 +167,12 @@ nav{position:sticky;top:calc(var(--hh,130px) - 1px);z-index:8;background:#0a1a52
 .lb2 .lt .sb{height:34px;padding:0 10px;margin:0 4px;border-radius:17px;border:1px solid rgba(255,224,0,.6);background:rgba(8,18,64,.9);color:#fff;font:600 13px Barlow,system-ui,sans-serif;cursor:pointer}.lb2 .sb.on{background:var(--y);color:#000}
 .lb2.sm .ls{touch-action:none;overflow:hidden}.lb2.sm .sw{cursor:crosshair}
 .vf .vs2{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 8px max(24px,env(safe-area-inset-bottom))}
-.vf section{max-width:600px;margin:0 auto 22px}
+.vf .vs2{scroll-snap-type:y proximity}
+.vf section{max-width:600px;min-height:100%;box-sizing:border-box;margin:0 auto;padding:10px 0 20px;border-bottom:3px solid var(--y);scroll-snap-align:start}
+.vf .row{display:flex;align-items:flex-start;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.vf h3 small{float:right;font-size:14px;color:#fff}
 .vf h3{margin:0 0 8px;color:var(--y);font:600 18px Barlow,system-ui,sans-serif}
-.lb2.vf .sw{height:auto;margin-bottom:8px}
+.lb2.vf .sw{flex:0 0 100%;height:auto;scroll-snap-align:center;scroll-snap-stop:always}
 .vf .vi{display:block;width:100%;height:auto;aspect-ratio:auto 9/20;border-radius:8px}
 </style><link rel="preconnect" href="https://script.google.com"><link rel="preconnect" href="https://drive.google.com"><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="preconnect" href="https://docs.google.com"><script async src="https://www.googletagmanager.com/gtag/js?id=G-5XPPPC5EXX"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-5XPPPC5EXX');</script>
@@ -306,7 +309,8 @@ function lbox(list,start,meta){
  history.pushState({lb:1},'');addEventListener('popstate',pop);addEventListener('keydown',key)}
 function vfeed(start){
  const d=document.createElement('div');d.className='lb2 vf';
- d.innerHTML='<div class="lt"><span class="lc"></span><button class="lx" aria-label="Tutup">✕</button></div><div class="vs2">'+TF.map(t=>'<section><h3>'+esc(t.name)+'</h3>'+t.ids.map((x,j)=>'<span class="sw"><img class="vi" src="'+esc(gtp(x,1400))+'" alt="Testimoni '+esc(t.name)+'" loading="lazy" decoding="async" referrerpolicy="no-referrer"'+sa(t,j,'contain')+' onerror="tfb(this)"></span>').join('')+'</section>').join('')+'</div>';
+ d.innerHTML='<div class="lt"><span class="lc"></span><button class="lx" aria-label="Tutup">✕</button></div><div class="vs2">'+TF.map(t=>'<section><h3>'+esc(t.name)+(t.ids.length>1?'<small>‹ geser › <b>1</b>/'+t.ids.length+'</small>':'')+'</h3><div class="row">'+t.ids.map((x,j)=>'<span class="sw"><img class="vi" src="'+esc(gtp(x,1400))+'" alt="Testimoni '+esc(t.name)+'" loading="lazy" decoding="async" referrerpolicy="no-referrer"'+sa(t,j,'contain')+' onerror="tfb(this)"></span>').join('')+'</div></section>').join('')+'</div>';
+ d.querySelectorAll('.row').forEach(r=>r.addEventListener('scroll',()=>{const b=r.parentNode.querySelector('h3 b');if(b)b.textContent=Math.round(r.scrollLeft/(r.clientWidth+8))+1},{passive:true}));
  const box=d.querySelector('.vs2'),lc=d.querySelector('.lc'),sec=box.children,ob=document.body.style.overflow;
  const upd=()=>{const y=box.getBoundingClientRect().top+box.clientHeight/3;let k=0;for(let i=0;i<sec.length;i++)if(sec[i].getBoundingClientRect().top<=y)k=i;lc.textContent=TF[k].name+' ('+(k+1)+'/'+TF.length+')'};
  const key=e=>{if(e.key=='Escape')close(true)},pop=()=>close(false);
