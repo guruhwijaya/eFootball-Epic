@@ -198,7 +198,9 @@ const ADM=new URLSearchParams(location.search).has('admin'),AK=new URLSearchPara
 const IC_SH='<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',IC_CT='<svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6"/></svg>';
 const KN=['no','nama','harga','coin','reg','fe','status','gambar','galeri','album','catatan','platform','tanggal','testimoni','testi','ulasan','pembeli','bintang','foto_testi','foto testi','gambar_testi','update','price'];
 const DEMOT=[{nama:'Rizky',teks:'Akun sesuai deskripsi, proses cepat. Recommended!',tgl:'8 Nov 2026',bintang:5,gambar:'',akun:'3'},{nama:'Dimas',teks:'Admin ramah dan fast respon, login lancar.',tgl:'5 Nov 2026',bintang:5,gambar:'',akun:'7'}];
-let T=[],AL=[],TF=[];try{TF=JSON.parse(localStorage.getItem('tf')||'[]')}catch(e){}
+const TF_DESC=true; // true = nomor besar di atas (56,55,54...), false = nomor kecil di atas (49,51,52...)
+const sortTF=a=>a.map((t,i)=>({t,i,n:parseInt(String(t.name||'').match(/\d+/)?.[0]??'',10)})).sort((x,y)=>{const nx=isNaN(x.n)?-1:x.n,ny=isNaN(y.n)?-1:y.n;return(TF_DESC?ny-nx:nx-ny)||x.i-y.i}).map(x=>x.t);
+let T=[],AL=[],TF=[];try{TF=sortTF(JSON.parse(localStorage.getItem('tf')||'[]'))}catch(e){}
 let FT=[];let GL={};try{GL=JSON.parse(localStorage.getItem('gl2')||'{}')}catch(e){}
 const mkT=a=>{const ls=String(a.testiImg||'').match(/https?:\/\/[^\s,;]+/g)||[],b={nama:a.pembeli,teks:a.testi,tgl:a.tgl,bintang:a.bintang};return ls.length?ls.map((g,i)=>({...b,teks:i?'':b.teks,gambar:g})):[b]};
 const BLN=['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
@@ -214,7 +216,7 @@ async function loadT(){
 async function loadTF(){
  if(!GAL)return;
  try{const r=await fetch(GAL+(GAL.includes('?')?'&':'?')+'testi=1&t='+Date.now(),{cache:'no-store'});const j=await r.json();
-  if(j&&Array.isArray(j.list)){TF=j.list.filter(x=>x.ids&&x.ids.length);try{localStorage.setItem('tf',JSON.stringify(TF))}catch(e){}render()}}
+  if(j&&Array.isArray(j.list)){TF=sortTF(j.list.filter(x=>x.ids&&x.ids.length));try{localStorage.setItem('tf',JSON.stringify(TF))}catch(e){}render()}}
  catch(e){}}
 function tfHTML(an){
  return '<div class="tg">'+TF.map((t,i)=>`<figure class="tmf tfc${an?' in':''}" data-i="${i}" style="--i:${i}"><img class="tfi" src="${esc(gpic(t.ids[0],1000))}" alt="Testimoni ${esc(t.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="tfb(this)"><figcaption>${esc(t.name)}<small>${t.ids.length} foto${t.t?' • '+esc(new Date(t.t).toLocaleDateString('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',year:'numeric'})):''}</small></figcaption></figure>`).join('')+'</div>'}
