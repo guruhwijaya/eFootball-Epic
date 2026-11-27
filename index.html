@@ -361,4 +361,9 @@ $('#q').oninput=$('#s').onchange=render;addEventListener('hashchange',()=>{ANI=t
 const hh=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');
 hh();addEventListener('resize',hh);if(window.ResizeObserver)new ResizeObserver(hh).observe(document.querySelector('header'));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(hh);
 load();
+
+// tiap tab menyimpan posisi gulirnya sendiri
+const POS={};let TABNOW=location.hash||'#tersedia';
+addEventListener('click',e=>{if(e.target.closest('a[href="#tersedia"],a[href="#terjual"],a[href="#testimoni"]'))POS[TABNOW]=scrollY},true);
+addEventListener('hashchange',()=>{const h=location.hash||'#tersedia';if(h==TABNOW)return;TABNOW=h;setTimeout(()=>scrollTo({top:POS[h]||0,behavior:'instant'}),0)});
 </script><div id="vs" class="vs"></div></body></html>
