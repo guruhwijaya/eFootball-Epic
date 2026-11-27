@@ -1,0 +1,61 @@
+name: Perbarui gambar pratinjau
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'   # tiap 3 jam
+  workflow_dispatch:          # bisa dijalankan manual
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency: pratinjau
+
+jobs:
+  pratinjau:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pasang Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.47.2
+          npx playwright install --with-deps chromium
+
+      - name: Foto tampilan katalog
+        run: |
+          cat > /tmp/foto.js <<'EOF'
+          const { chromium } = require(process.env.GITHUB_WORKSPACE + '/node_modules/playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            const page = await browser.newPage({
+              viewport: { width: 1200, height: 630 },
+              locale: 'id-ID', timezoneId: 'Asia/Jakarta'
+            });
+            await page.goto('https://guruhwijaya.github.io/eFootball-Epic/?t=' + Date.now(),
+              { waitUntil: 'load', timeout: 90000 });
+            await page.waitForSelector('article', { timeout: 60000 });
+            await page.waitForTimeout(12000);
+            await page.screenshot({ path: 'og-image.jpg', type: 'jpeg', quality: 75 });
+            await browser.close();
+          })().catch(e => { console.error(e); process.exit(1); });
+          EOF
+          node /tmp/foto.js
+
+      - name: Simpan dan terbitkan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(date +%s)
+          sed -i -E "s#(og-image\.jpg)(\?v=[0-9]+)?\"#\1?v=$V\"#g" index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add og-image.jpg index.html
+          git commit -m "Perbarui gambar pratinjau" || exit 0
+          git pull --rebase
+          git push
+          gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds"
